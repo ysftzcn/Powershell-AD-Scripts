@@ -1,30 +1,30 @@
-#// Start of script 
-#// Get year and month for csv export file 
+# Script baslangici 
+#// CSV dosyasi icin yil ve ay verisini hazirliyoruz.
 $DateTime = Get-Date -f "yyyy-MM" 
  
-#// Set CSV file name 
-$CSVFile = "C:\AD_Groups"+$DateTime+".csv" 
+#// CSV dosyasinin adini tanimliyoruz. 
+$CSVFile = "C:\Temp\AD_Groups_"+$DateTime+".csv" 
  
-#// Create emy array for CSV data 
+#// CSV datasi için bos bir array olusturuyoruz. 
 $CSVOutput = @() 
  
-#// Get all AD groups in the domain 
+#// Domain icindeki AD Gruplarini cekiyoruz. 
 $ADGroups = Get-ADGroup -Filter * 
  
-#// Set progress bar variables 
+#// Progress bar icin degisken tanimliyoruz. 
 $i=0 
 $tot = $ADGroups.count 
  
 foreach ($ADGroup in $ADGroups) { 
-    #// Set up progress bar 
+    #// Progress bari hazirliyoruz 
     $i++ 
     $status = "{0:N0}" -f ($i / $tot * 100) 
     Write-Progress -Activity "Exporting AD Groups" -status "Processing Group $i of $tot : $status% Completed" -PercentComplete ($i / $tot * 100) 
  
-    #// Ensure Members variable is empty 
+    #// Grup uyelerinin degiskenini tanimliyoruz. 
     $Members = "" 
  
-    #// Get group members which are also groups and add to string 
+    #// AD Grup uyelerini cekiyoruz. 
     $MembersArr = Get-ADGroup -filter {Name -eq $ADGroup.Name} | Get-ADGroupMember |  select Name 
     if ($MembersArr) { 
         foreach ($Member in $MembersArr) { 
@@ -33,7 +33,7 @@ foreach ($ADGroup in $ADGroups) {
         $Members = $Members.Substring(1,($Members.Length) -1) 
     } 
  
-    #// Set up hash table and add values 
+    #// Hash table tanimliyoruz ve deger giriyoruz. 
     $HashTab = $NULL 
     $HashTab = [ordered]@{ 
         "Name" = $ADGroup.Name 
@@ -42,11 +42,11 @@ foreach ($ADGroup in $ADGroups) {
         "Members" = $Members 
     } 
  
-    #// Add hash table to CSV data array 
+    #// CSV'ye Hash table tanimliyoruz.  
     $CSVOutput += New-Object PSObject -Property $HashTab 
 } 
  
-#// Export to CSV files 
+#// CSV dosyasini export ediyoruz. 
 $CSVOutput | Sort-Object Name | Export-Csv $CSVFile -NoTypeInformation 
  
-#// End of script
+#// Script Sonu
